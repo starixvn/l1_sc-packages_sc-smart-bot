@@ -1,4 +1,4 @@
-import * as Bot from "./bots";
-import * as Consumer from "./consumers";
+import * as Bots from "./bots";
+import * as Consumers from "./consumers";
 
-export { Consumer, Bot };
+export { Consumers, Bots };
