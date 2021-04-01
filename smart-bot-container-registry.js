@@ -5,7 +5,7 @@ import { BetPatternConsumer } from "./consumers";
 
 const { asClass } = awilix;
 
-export default class ContainerRegistry {
+export default class SmartBotContainerRegistry {
     register() {
         this.container.register({
             betPatternConsumer: asClass(BetPatternConsumer).singleton().proxy(),
