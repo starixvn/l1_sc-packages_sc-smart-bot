@@ -7,11 +7,11 @@ const { asClass } = awilix;
 
 export default class SmartBotContainerRegistry {
     register() {
-        this.container.register({
+        const registers = {
             betPatternConsumer: asClass(BetPatternConsumer).singleton().proxy(),
             tableGameSmartBot: asClass(TableGameSmartBot).singleton(),
-        });
+        };
 
-        return this.container;
+        return registers;
     }
 }
