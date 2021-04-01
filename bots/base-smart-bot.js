@@ -1,0 +1,156 @@
+import Chance from "chance";
+import mongoose from "mongoose";
+
+export default class BaseSmartBot {
+	/**
+	 * @param {BetPatternConsumer} betPatternConsumer
+	 * @param {mongoose.Model} smartBotBetLogsRepository
+	 */
+
+	constructor(definition, betPatternConsumer, smartBotBetLogsRepository, userInfosRepository) {
+		this.betPatternConsumer = betPatternConsumer;
+		this.smartBotBetLogsRepository = smartBotBetLogsRepository;
+		this.userInfosRepository = userInfosRepository;
+
+		this.smartBots = [];
+		this.chance = new Chance();
+		this.isExpired = false;
+		this.choiceMapper = definition.choices;
+
+		this.maxBetOfChoices = null;
+		this.afterPlacingBet = null;
+		this.beforeRemovingAll = null;
+	}
+
+	async reset(
+		{ smartBotEnabled, maxBetOfChoices, smartBotGroupRatio, wholeRound },
+		{ userResetFilters, userUpdateFilters, userUpdates, userProjections }
+	) {
+		if (smartBotEnabled) {
+			this.maxBetOfChoices = maxBetOfChoices;
+			this.isExpired = await this.betPatternConsumer.resetAndUpdatePatterns({ smartBotEnabled, smartBotGroupRatio }, wholeRound);
+
+			if (this.isExpired) {
+				await this.removeAll();
+			}
+
+			if (this.smartBots.length === 0) {
+				this.smartBots = await this.assignPatterns(
+					userResetFilters,
+					userUpdateFilters,
+					userUpdates,
+					userProjections,
+					this.betPatternConsumer.getPatterns()
+				);
+			}
+		} else {
+			await this.removeAll();
+		}
+
+		return this.smartBots;
+	}
+
+	async assignPatterns(customResetFilters, customUpdateFilters, customUpdates, userProjections, patterns) {
+		const maxInitializeAmount = 88000;
+		const minInitializeAmount = 36000;
+
+		const resetFilters = { ...customResetFilters, type: true, patternId: { $gt: 0 } };
+
+		await this.userInfosRepository.updateMany(resetFilters, { patternId: 0 });
+
+		const bots = await this.userInfosRepository.aggregate([
+			{
+				$match: {
+					...customUpdateFilters,
+					type: true,
+				},
+			},
+			{ $sample: { size: patterns.length } },
+			{ $project: userProjections },
+		]);
+
+		for (let index = 0; index < patterns.length; index++) {
+			const pattern = patterns[index];
+			const bot = bots[index];
+
+			if (bot) {
+				const amount = this.chance.integer({ min: minInitializeAmount, max: maxInitializeAmount });
+				const updateFilters = { ...customUpdateFilters, id: bot.id, type: true };
+				const updates = { ...customUpdates, patternId: pattern._id, red: amount };
+
+				await this.userInfosRepository.updateOne(updateFilters, updates);
+
+				bot.patternId = pattern._id;
+			}
+		}
+
+		return bots;
+	}
+
+	async removeAll() {
+		if (this.beforeRemovingAll) {
+			await this.beforeRemovingAll(this.smartBots);
+		}
+
+		this.smartBots = [];
+	}
+
+	async run(roundId, remainingTime) {
+		this.smartBots.forEach((smartBot) => {
+			smartBot.betActions = this.betPatternConsumer.getBetActions(smartBot.patternId);
+		});
+
+		for (const smartBot of this.smartBots) {
+			const actionsInSecond = smartBot.betActions.filter((betAction) => betAction.second === remainingTime) ?? [];
+			for (const action of actionsInSecond) {
+				await this.placeBet(smartBot, action, roundId);
+			}
+		}
+	}
+
+	async placeBet(bot, betAction, roundId) {}
+
+	generateChoiceAndAmount(betAction) {
+		const { choiceId, amount } = betAction ?? { choiceId: 0, amount: 0 };
+		const choice = this.convertBetChoice(choiceId);
+
+		return choice && amount > 0 ? { choice, amount: this.reduceAmountIfOverMaxBet(choice, amount) } : { choice, amount };
+	}
+
+	convertBetChoice(choiceId) {
+		return choiceId > 0 ? this.choiceMapper[choiceId - 1] : null;
+	}
+
+	reduceAmountIfOverMaxBet(choice, amount) {
+		const maxBetPerChoice = this.maxBetOfChoices[choice] || 0;
+
+		return Math.min(amount, maxBetPerChoice);
+	}
+
+	async insertBetActionLogs(bot, { choiceId, amount, second, roundId }) {
+		if (this.smartBotBetLogsRepository) {
+			await this.smartBotBetLogsRepository.create({
+				uid: bot.id,
+				name: bot.name,
+				patternId: bot.patternId,
+				round: roundId,
+				time: new Date(),
+				choiceId,
+				amount,
+				second,
+			});
+		}
+	}
+
+	getSmartBots() {
+		return this.smartBots;
+	}
+
+	setAfterPlacingBet(func) {
+		this.afterPlacingBet = func;
+	}
+
+	setBeforeRemovingAll(func) {
+		this.beforeRemovingAll = func;
+	}
+}

@@ -1,0 +1,3 @@
+{
+    "extends": ["sc-semantic-release"]
+}

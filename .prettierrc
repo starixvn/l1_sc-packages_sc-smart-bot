@@ -1,0 +1,13 @@
+{
+    "tabWidth": 4,
+    "useTabs": false,
+    "printWidth": 140,
+    "overrides": [
+        {
+            "files": "*.md",
+            "options": {
+                "tabWidth": 2
+            }
+        }
+    ]
+}
