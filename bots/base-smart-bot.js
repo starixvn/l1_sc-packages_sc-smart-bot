@@ -84,6 +84,7 @@ export default class BaseSmartBot {
                 await this.userInfosRepository.updateOne(updateFilters, updates);
 
                 bot.patternId = pattern._id;
+                bot.red = amount;
             }
         }
 
