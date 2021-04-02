@@ -50,7 +50,7 @@ export default class BaseSmartBot {
             await this.removeAll();
         }
 
-        return this.smartBots;
+        return { isExpired, smartBots: this.smartBots };
     }
 
     async assignPatterns(customResetFilters, customUpdateFilters, customUpdates, userProjections, patterns) {
