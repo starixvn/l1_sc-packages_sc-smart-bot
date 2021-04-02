@@ -15,7 +15,6 @@ export default class BaseSmartBot {
 
         this.smartBots = [];
         this.chance = new Chance();
-        this.isExpired = false;
         this.choiceMapper = definition.choices;
 
         this.maxBetOfChoices = null;
@@ -29,11 +28,12 @@ export default class BaseSmartBot {
         { smartBotEnabled, maxBetOfChoices, smartBotGroupRatio, wholeRound },
         { userResetFilters, userUpdateFilters, userUpdates, userProjections }
     ) {
+        let isExpired = false;
         if (smartBotEnabled) {
             this.maxBetOfChoices = maxBetOfChoices;
-            this.isExpired = await this.betPatternConsumer.resetAndUpdatePatterns({ smartBotEnabled, smartBotGroupRatio }, wholeRound);
+            isExpired = await this.betPatternConsumer.resetAndUpdatePatterns({ smartBotEnabled, smartBotGroupRatio }, wholeRound);
 
-            if (this.isExpired) {
+            if (isExpired) {
                 await this.removeAll();
             }
 
