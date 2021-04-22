@@ -19,7 +19,7 @@ export default class TableGameSmartBot extends BaseSmartBot {
                 this.afterPlacingBet(bot, user.red, choice, amount);
             }
 
-            if (this.insertOrUpdateBet) {
+            if (this.insertOrUpdateBetAsync) {
                 await this.insertOrUpdateBetAsync(bot, choice, amount);
             }
         }
