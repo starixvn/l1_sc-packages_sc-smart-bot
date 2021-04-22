@@ -12,7 +12,6 @@
         "betaver": "npm version prerelease --preid beta",
         "pub": "npm publish --registry http://npm.lumigame.com",
         "pubbeta": "npm publish --registry http://npm.lumigame.com --tag beta",
-        "unpublish": "npm unpublish --force sc-smart-bot",
         "semantic-release": "semantic-release"
     },
     "jestSonar": {
