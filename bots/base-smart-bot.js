@@ -20,7 +20,7 @@ export default class BaseSmartBot {
         this.maxBetOfChoices = null;
         this.afterPlacingBet = null;
         this.beforeRemovingAll = null;
-        this.insertOrUpdateBet = null;
+        this.insertOrUpdateBetAsync = null;
 
         this.gameData = gameData;
         this.publisher = publisher;
@@ -161,7 +161,7 @@ export default class BaseSmartBot {
         this.beforeRemovingAll = func;
     }
 
-    setInsertUpdateBet(func) {
-        this.insertOrUpdateBet = func;
+    setInsertUpdateBet(asyncFunc) {
+        this.insertOrUpdateBetAsync = asyncFunc;
     }
 }
