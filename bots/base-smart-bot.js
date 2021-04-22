@@ -8,7 +8,7 @@ export default class BaseSmartBot {
      * @param {BaseEventPublisher} publisher
      */
 
-    constructor(definition, gameData, publisher, betPatternConsumer, smartBotBetLogsRepository, userInfosRepository) {
+    constructor(definition, gameData, publisher, betPatternConsumer, smartBotBetLogsRepository, userInfosRepository, tempBetsRepository) {
         this.betPatternConsumer = betPatternConsumer;
         this.smartBotBetLogsRepository = smartBotBetLogsRepository;
         this.userInfosRepository = userInfosRepository;
@@ -20,8 +20,11 @@ export default class BaseSmartBot {
         this.maxBetOfChoices = null;
         this.afterPlacingBet = null;
         this.beforeRemovingAll = null;
+        this.insertOrUpdateBet = null;
+
         this.gameData = gameData;
         this.publisher = publisher;
+        this.tempBetsRepository = tempBetsRepository;
     }
 
     async reset(
@@ -156,5 +159,9 @@ export default class BaseSmartBot {
 
     setBeforeRemovingAll(func) {
         this.beforeRemovingAll = func;
+    }
+
+    setInsertUpdateBet(func) {
+        this.insertOrUpdateBet = func;
     }
 }
