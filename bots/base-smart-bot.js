@@ -167,4 +167,8 @@ export default class BaseSmartBot {
     registerAdjustBetEvent(asyncFunc, context) {
         this.eventEmitter.on("adjustBet", asyncFunc, context);
     }
+
+    onError(func) {
+        this.eventEmitter.on("error", func);
+    }
 }
