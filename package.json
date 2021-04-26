@@ -1,6 +1,6 @@
 {
     "name": "sc-smart-bot",
-    "version": "1.0.1-beta.13",
+    "version": "1.0.1-beta.14",
     "description": "SC Smart Bot",
     "main": "./src/index.js",
     "scripts": {
