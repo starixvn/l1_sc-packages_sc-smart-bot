@@ -97,9 +97,7 @@ export default class BaseSmartBot {
     }
 
     async removeAll() {
-        if (this.beforeRemovingAll) {
-            await this.beforeRemovingAll(this.smartBots);
-        }
+        this.eventEmitter.emit("removeAll", this.smartBots);
 
         this.smartBots = [];
     }
@@ -115,6 +113,7 @@ export default class BaseSmartBot {
                 const { bot, choice, amount, balance } = await this.placeBet(smartBot, action, roundId);
 
                 this.eventEmitter.emit("placeBet", bot, choice, amount, balance);
+                this.eventEmitter.emit("adjustBet", bot, choice, amount, balance);
             }
         }
     }
@@ -157,15 +156,15 @@ export default class BaseSmartBot {
         return this.smartBots;
     }
 
-    setAfterPlacingBet(func) {
-        this.eventEmitter.on("placeBet", func);
+    registerPlaceBetEvent(func, context) {
+        this.eventEmitter.on("placeBet", func, context);
     }
 
-    setBeforeRemovingAll(func) {
-        this.beforeRemovingAll = func;
+    registerRemoveAllBotEvent(func, context) {
+        this.eventEmitter.on("removeAll", func, context);
     }
 
-    setInsertUpdateBet(asyncFunc) {
-        this.insertOrUpdateBetAsync = asyncFunc;
+    registerAdjustBetEvent(asyncFunc, context) {
+        this.eventEmitter.on("adjustBet", asyncFunc, context);
     }
 }
