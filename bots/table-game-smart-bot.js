@@ -22,9 +22,11 @@ export default class TableGameSmartBot extends BaseSmartBot {
             if (this.insertOrUpdateBetAsync) {
                 await this.insertOrUpdateBetAsync(bot, choice, amount);
             }
+
+            return { bot, choice, amount, balance: user.red };
         }
 
-        return { bot, choice, amount };
+        return { bot, choice, amount: 0, balance: 0 };
     }
 
     generateChoiceAndAmount(betAction) {

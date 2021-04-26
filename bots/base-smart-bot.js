@@ -1,4 +1,5 @@
 import Chance from "chance";
+import EventEmitter from "events";
 import mongoose from "mongoose";
 
 export default class BaseSmartBot {
@@ -25,6 +26,7 @@ export default class BaseSmartBot {
         this.gameData = gameData;
         this.publisher = publisher;
         this.tempBetsRepository = tempBetsRepository;
+        this.eventEmitter = new EventEmitter();
     }
 
     async reset(
@@ -110,7 +112,9 @@ export default class BaseSmartBot {
         for (const smartBot of this.smartBots) {
             const actionsInSecond = smartBot.betActions.filter((betAction) => betAction.second === remainingTime) ?? [];
             for (const action of actionsInSecond) {
-                await this.placeBet(smartBot, action, roundId);
+                const { bot, choice, amount, balance } = await this.placeBet(smartBot, action, roundId);
+
+                this.event.emit("placeBet", bot, choice, amount, balance);
             }
         }
     }
@@ -154,7 +158,7 @@ export default class BaseSmartBot {
     }
 
     setAfterPlacingBet(func) {
-        this.afterPlacingBet = func;
+        this.eventEmitter.on("placeBet", func);
     }
 
     setBeforeRemovingAll(func) {
