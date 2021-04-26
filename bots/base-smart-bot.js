@@ -1,5 +1,5 @@
 import Chance from "chance";
-import EventEmitter from "events";
+import EventEmitter from "eventemitter3";
 import mongoose from "mongoose";
 
 export default class BaseSmartBot {
@@ -114,7 +114,7 @@ export default class BaseSmartBot {
             for (const action of actionsInSecond) {
                 const { bot, choice, amount, balance } = await this.placeBet(smartBot, action, roundId);
 
-                this.event.emit("placeBet", bot, choice, amount, balance);
+                this.eventEmitter.emit("placeBet", bot, choice, amount, balance);
             }
         }
     }
